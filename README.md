@@ -93,16 +93,4 @@ You can export from Postman via: File → Export → Collection v2.1
 ## 📩 Contact
 For questions or feedback, feel free to open an issue or contact [shadia2169@gmail.com].
 
----
-
-## ✅ To-Do for Hand-off
-
-1. ✅ Push all code to GitHub
-2. ✅ Create & add `README.md` file
-3. ✅ Export Postman collection with all tested endpoints
-4. ✅ Mention live API URL: `https://courier-management-system-backendapi.onrender.com`
-5. ✅ Add instructions for setting up `.env` and Stripe key
-
----
-
 
