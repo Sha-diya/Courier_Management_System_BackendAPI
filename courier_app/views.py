@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -98,22 +99,19 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Save order with user set
         order = serializer.save(user=self.request.user)
 
-        # Set default status for new orders
-        order.status = Order.StatusChoices.PENDING
-        order.save()
-        logger.info(f"Order {order.id} created by user {self.request.user.username}")
-        
+        # Validate total_amount presence and positive value
+        if order.total_amount is None:
+            raise ValidationError({"total_amount": "Total amount is required."})
+
+        if order.total_amount <= 0:
+            raise ValidationError({"total_amount": "Total amount must be greater than 0."})
+
         # Optional payment on creation
         pay_now = self.request.data.get('pay_now', False)
         if pay_now in [True, 'true', 'True', '1', 1]:
-            if order.total_amount <= 0:
-                # Skip payment creation if amount invalid
-                logger.warning(f"Order {order.id} has invalid total_amount: {order.total_amount}")
-                return
-
             try:
                 intent = stripe.PaymentIntent.create(
-                    amount=int(order.total_amount * 100),  # convert dollars to cents
+                    amount=int(order.total_amount * 100),  # dollars to cents
                     currency='usd',
                     metadata={'order_id': order.id},
                     automatic_payment_methods={'enabled': True},
@@ -122,11 +120,13 @@ class OrderViewSet(viewsets.ModelViewSet):
                 order.payment_method = 'stripe'
                 order.save()
 
-                # Store client_secret for attaching to response
+                # Attach client_secret for frontend payment
                 self.extra_context = {'client_secret': intent.client_secret}
 
             except stripe.error.StripeError as e:
                 logger.error(f"Stripe error on order creation payment intent: {e}")
+
+        # No explicit return needed — DRF handles response
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
