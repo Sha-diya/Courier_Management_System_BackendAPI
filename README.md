@@ -73,7 +73,7 @@ python manage.py runserver
 | GET    | `/api/v1/users/`           | List users (Admin only)           |
 
 
-# 📦 Courier Management System – API Documentation (Postman)
+# 📦 API Documentation
 
 **Base URL:**\
 **Production**: `https://courier-management-system-backendapi.onrender.com/api/v1/`\
@@ -96,7 +96,7 @@ Registers a new user (Admin, Delivery Man, or User).
   "email": "john@example.com",
   "password": "TestPass123",
   "password2": "TestPass123",
-  "role": "user"  // or "admin", "delivery_man"
+  "role": "USER"  // or "ADMIN", "DELIVERY_MAN"
 }
 ```
 
