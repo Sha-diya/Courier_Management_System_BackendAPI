@@ -98,6 +98,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         # Save order with user set
         order = serializer.save(user=self.request.user)
 
+        # Set default status for new orders
+        order.status = Order.StatusChoices.PENDING
+        order.save()
+        logger.info(f"Order {order.id} created by user {self.request.user.username}")
+        
         # Optional payment on creation
         pay_now = self.request.data.get('pay_now', False)
         if pay_now in [True, 'true', 'True', '1', 1]:
