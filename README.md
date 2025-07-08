@@ -91,7 +91,7 @@ You can export from Postman via: File → Export → Collection v2.1
 | DeliveryMan | View assigned orders, update status |
 
 ## 📩 Contact
-For questions or feedback, feel free to open an issue or contact [shadia.akther.cse@gmail.com].
+For questions or feedback, feel free to open an issue or contact [shadia2169@gmail.com].
 
 ---
 
