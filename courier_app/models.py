@@ -38,7 +38,7 @@ class Order(models.Model):
 
     stripe_payment_intent = models.CharField(max_length=255, null=True, blank=True)
     is_paid = models.BooleanField(default=False)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  # price in dollars
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     payment_method = models.CharField(
         max_length=50,
