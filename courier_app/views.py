@@ -68,7 +68,38 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 # Custom permissions
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.role == User.Roles.ADMIN
+        return request.user.is_authenticated and request.user.role == User.Roles.ADMIN
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdmin]
+
+    def get_queryset(self):
+        return User.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        password = request.data.get('password')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        if password:
+            user.set_password(password)
+            user.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        password = request.data.get('password')
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        if password:
+            user.set_password(password)
+            user.save()
+        return Response(serializer.data)
 
 
 class IsDeliveryMan(permissions.BasePermission):
