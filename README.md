@@ -73,6 +73,219 @@ python manage.py runserver
 | GET    | `/api/v1/users/`           | List users (Admin only)           |
 
 
+# 📦 Courier Management System – API Documentation (Postman)
+
+**Base URL:**\
+**Production**: `https://courier-management-system-backendapi.onrender.com/api/v1/`\
+**Local**: `http://127.0.0.1:8000/api/v1/`
+
+---
+
+## 📁 Auth Endpoints
+
+### 🔐 Register User
+
+**POST** `/auth/register/`\
+Registers a new user (Admin, Delivery Man, or User).
+
+#### Request Body:
+
+```json
+{
+  "username": "john",
+  "email": "john@example.com",
+  "password": "TestPass123",
+  "password2": "TestPass123",
+  "role": "user"  // or "admin", "delivery_man"
+}
+```
+
+#### Response:
+
+```json
+{
+  "id": 1,
+  "username": "john",
+  "email": "john@example.com",
+  "role": "user"
+}
+```
+
+---
+
+### 🔑 Login
+
+**POST** `/auth/login/`
+
+#### Request Body:
+
+```json
+{
+  "username": "john",
+  "password": "TestPass123"
+}
+```
+
+#### Response:
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Login successful",
+  "Data": {
+    "access": "jwt-access-token",
+    "refresh": "jwt-refresh-token",
+    "user": {
+      "id": 1,
+      "username": "john",
+      "email": "john@example.com",
+      "role": "user"
+    }
+  }
+}
+```
+
+---
+
+### 🔄 Refresh Token
+
+**POST** `/token/refresh/`
+
+#### Request Body:
+
+```json
+{
+  "refresh": "jwt-refresh-token"
+}
+```
+
+#### Response:
+
+```json
+{
+  "access": "new-jwt-access-token"
+}
+```
+
+---
+
+## 👤 User Profile
+
+### 🔍 Get / Update Profile
+
+**GET / PUT** `/profile/`\
+Requires Authorization header:\
+`Authorization: Bearer <access_token>`
+
+#### Response (GET):
+
+```json
+{
+  "id": 1,
+  "username": "john",
+  "email": "john@example.com",
+  "role": "user"
+}
+```
+
+---
+
+## 📦 Orders
+
+### 🚚 Create Order
+
+**POST** `/orders/`
+
+#### Request Body:
+
+```json
+{
+  "pickup_address": "123 Main St",
+  "delivery_address": "456 Elm St",
+  "package_details": "Books",
+  "total_amount": "20.00",
+  "delivery_man_id": 3,
+  "pay_now": true
+}
+```
+
+#### Response:
+
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "message": "Order created successfully",
+  "Data": {
+    "id": 1,
+    "pickup_address": "..."
+  },
+  "client_secret": "stripe-client-secret"
+}
+```
+
+---
+
+### 📜 View All My Orders (User)
+
+**GET** `/orders/status/`
+
+---
+
+### 📜 Admin View All Orders
+
+**GET** `/orders/`
+
+---
+
+### 🛠️ Update Order Status (Delivery Man)
+
+**PUT** `/orders/{id}/`\
+Only delivery man assigned to the order can update its status.
+
+#### Request Body:
+
+```json
+{
+  "status": "delivered"
+}
+```
+
+---
+
+### 💳 Pay for an Order (Stripe)
+
+**POST** `/orders/{order_id}/pay/`
+
+#### Response:
+
+```json
+{
+  "client_secret": "stripe-payment-intent-client-secret"
+}
+```
+
+---
+
+## 👥 User Management (Admin Only)
+
+### 📋 List All Users
+
+**GET** `/users/`
+
+### 📘 Create User
+
+**POST** `/users/`
+
+### 🔍 Retrieve / Update / Delete User
+
+**GET / PUT / DELETE** `/users/{id}/`
+
+---
+
+
+
 ## 📬 Postman Collection
 
 Include a file named courier_api_postman_collection.json containing:
