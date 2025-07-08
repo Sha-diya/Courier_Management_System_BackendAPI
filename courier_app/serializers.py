@@ -1,6 +1,8 @@
 from rest_framework import serializers
-from .models import User,Order
+from .models import User, Order
 from django.contrib.auth.password_validation import validate_password
+from decimal import Decimal
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
@@ -29,13 +31,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'role')
 
+
 class OrderSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)  # Show username
+    user = serializers.StringRelatedField(read_only=True)  # show username or __str__
     delivery_man = serializers.StringRelatedField(read_only=True)
     delivery_man_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.filter(role=User.Roles.DELIVERY_MAN),
@@ -43,6 +47,9 @@ class OrderSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         allow_null=True,
+    )
+    total_amount = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=True
     )
 
     class Meta:
@@ -55,6 +62,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'pickup_address',
             'delivery_address',
             'package_details',
+            'total_amount',
             'status',
             'is_paid',
             'payment_method',
@@ -65,6 +73,13 @@ class OrderSerializer(serializers.ModelSerializer):
             'user',
             'status',
             'is_paid',
-            'stripe_payment_intent',
             'payment_method',
+            'stripe_payment_intent',
         ]
+
+    def validate_total_amount(self, value):
+        if value is None:
+            raise serializers.ValidationError("Total amount is required.")
+        if value <= Decimal('0.00'):
+            raise serializers.ValidationError("Total amount must be greater than 0.")
+        return value

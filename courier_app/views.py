@@ -1,4 +1,4 @@
-from django.forms import ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -66,6 +66,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     """
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
+    permission_classes = [IsAuthenticated]  # Require authentication for all actions
 
     def get_queryset(self):
         user = self.request.user
@@ -79,13 +80,11 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
             # Only Admin or Delivery man allowed to update/destroy orders
-            if self.request.user.role == User.Roles.ADMIN:
-                return [permissions.IsAuthenticated()]
-            elif self.request.user.role == User.Roles.DELIVERY_MAN:
+            if self.request.user.role in [User.Roles.ADMIN, User.Roles.DELIVERY_MAN]:
                 return [permissions.IsAuthenticated()]
             else:
-                # Regular users cannot update or delete orders
-                return [permissions.IsAdminUser()]  # effectively deny access
+                # Deny all other users from update/delete
+                return [permissions.DenyAll()]
         elif self.action == 'create':
             return [permissions.IsAuthenticated()]
         elif self.action == 'assigned':
@@ -96,22 +95,21 @@ class OrderViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated()]
 
     def perform_create(self, serializer):
-        # Save order with user set
         order = serializer.save(user=self.request.user)
 
-        # Validate total_amount presence and positive value
         if order.total_amount is None:
             raise ValidationError({"total_amount": "Total amount is required."})
 
         if order.total_amount <= 0:
             raise ValidationError({"total_amount": "Total amount must be greater than 0."})
 
-        # Optional payment on creation
         pay_now = self.request.data.get('pay_now', False)
+        client_secret = None
+
         if pay_now in [True, 'true', 'True', '1', 1]:
             try:
                 intent = stripe.PaymentIntent.create(
-                    amount=int(order.total_amount * 100),  # dollars to cents
+                    amount=int(order.total_amount * 100),
                     currency='usd',
                     metadata={'order_id': order.id},
                     automatic_payment_methods={'enabled': True},
@@ -119,20 +117,18 @@ class OrderViewSet(viewsets.ModelViewSet):
                 order.stripe_payment_intent = intent.id
                 order.payment_method = 'stripe'
                 order.save()
-
-                # Attach client_secret for frontend payment
-                self.extra_context = {'client_secret': intent.client_secret}
+                client_secret = intent.client_secret
 
             except stripe.error.StripeError as e:
                 logger.error(f"Stripe error on order creation payment intent: {e}")
 
-        # No explicit return needed — DRF handles response
+        # Return client_secret from perform_create via attribute for use in create response
+        self._client_secret = client_secret
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
-        # Add client_secret to response if payment intent created
-        if hasattr(self, 'extra_context') and 'client_secret' in self.extra_context:
-            response.data['client_secret'] = self.extra_context['client_secret']
+        if hasattr(self, '_client_secret') and self._client_secret:
+            response.data['client_secret'] = self._client_secret
         return response
 
     def update(self, request, *args, **kwargs):
@@ -142,7 +138,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             if order.delivery_man != request.user:
                 return Response({"detail": "You are not assigned to this order."}, status=status.HTTP_403_FORBIDDEN)
 
-            # Delivery man can only update the status field
             status_field = request.data.get('status')
             if status_field not in dict(Order.StatusChoices.choices):
                 return Response({"detail": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
@@ -153,7 +148,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         elif request.user.role == User.Roles.ADMIN:
-            # Admin can update any fields
             return super().update(request, *args, **kwargs)
 
         else:
@@ -183,11 +177,10 @@ class PayOrderView(APIView):
             if order.is_paid:
                 return Response({"message": "Order already paid."}, status=status.HTTP_400_BAD_REQUEST)
 
-            amount = int(order.total_amount * 100)  # convert dollars to cents
+            amount = int(order.total_amount * 100)
             if amount <= 0:
                 return Response({"error": "Invalid order amount."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Reuse existing PaymentIntent if available
             if order.stripe_payment_intent:
                 intent = stripe.PaymentIntent.retrieve(order.stripe_payment_intent)
             else:
@@ -201,9 +194,7 @@ class PayOrderView(APIView):
                 order.payment_method = 'stripe'
                 order.save()
 
-            return Response({
-                'client_secret': intent.client_secret
-            }, status=status.HTTP_200_OK)
+            return Response({'client_secret': intent.client_secret}, status=status.HTTP_200_OK)
 
         except Order.DoesNotExist:
             return Response({"error": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
