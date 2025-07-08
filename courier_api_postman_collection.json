@@ -1,0 +1,254 @@
+{
+    "info": {
+        "name": "Courier Management System API",
+        "description": "Postman Collection for all backend API endpoints",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Register",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"testpassword\",\n    \"role\": \"user\"\n}"
+                },
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/register/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "register"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Login",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"testpassword\"\n}"
+                },
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/login/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "login"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Refresh Token",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/token/refresh/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "token",
+                        "refresh"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Get Profile",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/profile/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "profile"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Create Order",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    },
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"pickup_address\": \"123 A Street\",\n    \"delivery_address\": \"456 B Street\",\n    \"total_amount\": 50,\n    \"pay_now\": true\n}"
+                },
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/orders/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "orders"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "List Orders (User/Admin)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/orders/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "orders"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Pay for Order",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/orders/1/pay/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "orders",
+                        "1",
+                        "pay"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Assigned Orders (DeliveryMan)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/orders/assigned/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "orders",
+                        "assigned"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "User List (Admin)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{BaseURL}}/api/v1/users/",
+                    "host": [
+                        "{{BaseURL}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "users"
+                    ]
+                }
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "BaseURL",
+            "value": "https://courier-management-system-backendapi.onrender.com"
+        },
+        {
+            "key": "access_token",
+            "value": ""
+        },
+        {
+            "key": "refresh_token",
+            "value": ""
+        }
+    ]
+}
