@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from .models import User, Order
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 from decimal import Decimal
+
+from .models import User, Order
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -39,8 +41,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)  # show username or __str__
+    user = serializers.StringRelatedField(read_only=True)
     delivery_man = serializers.StringRelatedField(read_only=True)
+
     delivery_man_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.filter(role=User.Roles.DELIVERY_MAN),
         source='delivery_man',
@@ -48,8 +51,11 @@ class OrderSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+
     total_amount = serializers.DecimalField(
-        max_digits=10, decimal_places=2, required=True
+        max_digits=10,
+        decimal_places=2,
+        required=True
     )
 
     class Meta:
@@ -83,3 +89,22 @@ class OrderSerializer(serializers.ModelSerializer):
         if value <= Decimal('0.00'):
             raise serializers.ValidationError("Total amount must be greater than 0.")
         return value
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        # This returns a uniform success structure for login as you want
+        return {
+            
+                "access": data.get("access"),
+                "refresh": data.get("refresh"),
+                "user": {
+                    "id": self.user.id,
+                    "username": self.user.username,
+                    "email": self.user.email,
+                    "role": self.user.role
+                }
+            
+        }
