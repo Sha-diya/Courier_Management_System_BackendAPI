@@ -4,7 +4,7 @@ This is the backend REST API for a Courier Management System built with Django R
 
 ## 🌐 Live API
 
-**Base URL:** https://courier-management-system-backendapi.onrender.com  
+**Base URL:** [https://courier-management-system-backendapi.onrender.com](https://courier-management-system-backendapi.onrender.com/api/v1/)  
 **Postman Documentation:** [https://documenter.getpostman.com/view/46111276/2sB34eGgp7](https://documenter.getpostman.com/view/46111276/2sB34eGgp7)
 
 ---
