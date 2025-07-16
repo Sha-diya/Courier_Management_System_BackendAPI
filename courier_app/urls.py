@@ -11,11 +11,9 @@ from .views import (
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
-# Router for orders
 order_router = DefaultRouter()
-order_router.register(r'', OrderViewSet, basename='orders')
+order_router.register(r'orders', OrderViewSet, basename='orders')
 
-# Router for user management (admin only)
 user_router = DefaultRouter()
 user_router.register(r'users', UserViewSet, basename='users')
 
@@ -28,6 +26,7 @@ urlpatterns = [
     path('orders/', include(order_router.urls)),
     path('orders/<int:order_id>/pay/', PayOrderView.as_view(), name='pay_order'),
 
-    # Admin user management endpoints
-    path('', include(user_router.urls)),
+    path('users/', include(user_router.urls)),
+    path('users/<int:user_id>/orders/', UserOrderStatusView.as_view(), name='user_orders'),
+    
 ]
