@@ -12,10 +12,10 @@ from .views import (
 from rest_framework_simplejwt.views import TokenRefreshView
 
 order_router = DefaultRouter()
-order_router.register(r'orders', OrderViewSet, basename='orders')
+order_router.register(r'', OrderViewSet, basename='orders')
 
 user_router = DefaultRouter()
-user_router.register(r'users', UserViewSet, basename='users')
+user_router.register(r'', UserViewSet, basename='users')
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -28,5 +28,5 @@ urlpatterns = [
 
     path('users/', include(user_router.urls)),
     path('users/<int:user_id>/orders/', UserOrderStatusView.as_view(), name='user_orders'),
-    
+
 ]
